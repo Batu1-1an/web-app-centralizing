@@ -1,0 +1,62 @@
+{% extends "assets/base.html" %}
+
+{% block title %}Asset List{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h1>Asset List</h1>
+    {# Link to add new asset (We'll add permission checks later) #}
+    <a href="{% url 'assets:asset_add' %}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Add New Asset</a>
+    <a href="{% url 'assets:asset_add' %}" class="btn btn-primary">Add New Asset</a>
+</div>
+
+{% if assets %}
+    <table class="table table-striped table-hover">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Type</th>
+                <th>Vendor</th>
+                <th>Expiry Date</th>
+                <th>Cost</th>
+                <th>Associated User</th>
+                <th>Department</th>
+                <th>Actions</th> {# Placeholder for future detail/edit links #}
+            </tr>
+        </thead>
+        <tbody>
+            {% for asset in assets %}
+                <tr>
+                    <td><a href="{% url 'assets:asset_detail' asset.pk %}">{{ asset.name }}</a></td>
+                    <td>
+                        {% if asset.asset_type == 'LIC' %}
+                            <span class="badge bg-primary">{{ asset.get_asset_type_display }}</span>
+                        {% elif asset.asset_type == 'DOM' %}
+                            <span class="badge bg-success">{{ asset.get_asset_type_display }}</span>
+                        {% elif asset.asset_type == 'SSL' %}
+                            <span class="badge bg-info text-dark">{{ asset.get_asset_type_display }}</span>
+                        {% elif asset.asset_type == 'SUB' %}
+                            <span class="badge bg-secondary">{{ asset.get_asset_type_display }}</span>
+                        {% else %}
+                            {{ asset.get_asset_type_display }}
+                        {% endif %}
+                    </td>
+                    <td>{{ asset.vendor|default:"N/A" }}</td>
+                    <td>{{ asset.expiry_date|date:"Y-m-d" }}</td>
+                    <td>{{ asset.cost|default:"N/A" }}</td>
+                    <td>{{ asset.associated_user.username|default:"N/A" }}</td>
+                    <td>{{ asset.associated_department|default:"N/A" }}</td>
+                    <td>
+                        {# Edit/Delete links will go here later #}
+                    </td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+{% else %}
+    <p>No assets found.</p>
+{% endif %}
+
+{# Moved the Add New Asset link to the top next to the H1 #}
+
+{% endblock %}
