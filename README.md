@@ -1,254 +1,302 @@
-<p align="center">
-  <img src="https://img.shields.io/badge/Python-3.11+-3776AB?style=for-the-badge&logo=python&logoColor=white" alt="Python 3.11+" />
-  <img src="https://img.shields.io/badge/Django-5.2-092E20?style=for-the-badge&logo=django&logoColor=white" alt="Django 5.2" />
-  <img src="https://img.shields.io/badge/PostgreSQL-4169E1?style=for-the-badge&logo=postgresql&logoColor=white" alt="PostgreSQL" />
-  <img src="https://img.shields.io/badge/Bootstrap-5.3-7952B3?style=for-the-badge&logo=bootstrap&logoColor=white" alt="Bootstrap 5.3" />
-  <img src="https://img.shields.io/badge/license-MIT-green?style=for-the-badge" alt="MIT License" />
-</p>
+<div align="center">
 
-<h1 align="center">IT Asset Manager</h1>
+# IT Asset Manager
 
-<p align="center">
-  A centralized web application for tracking IT assets — licenses, domains, SSL certificates, and software subscriptions — with expiry monitoring, role-based access control, and automated renewal alerts.
-  <br /><br />
-  <a href="#features">Features</a> •
-  <a href="#tech-stack">Tech Stack</a> •
-  <a href="#getting-started">Getting Started</a> •
-  <a href="#configuration">Configuration</a> •
-  <a href="#usage">Usage</a> •
-  <a href="#testing">Testing</a> •
-  <a href="#project-structure">Project Structure</a>
-</p>
+**Centralized lifecycle tracking for licenses, domains, SSL certificates, and software subscriptions — with expiry monitoring, RBAC, and automated renewal alerts.**
+
+
+![Python 3.11+](https://img.shields.io/badge/Python_3.11+-3776AB?style=flat-square&logo=python&logoColor=white)
+![Django 5.2](https://img.shields.io/badge/Django_5.2-092E20?style=flat-square&logo=django&logoColor=white)
+![PostgreSQL](https://img.shields.io/badge/PostgreSQL-4169E1?style=flat-square&logo=postgresql&logoColor=white)
+![Bootstrap 5.3](https://img.shields.io/badge/Bootstrap_5.3-7952B3?style=flat-square&logo=bootstrap&logoColor=white)
+![Supabase Ready](https://img.shields.io/badge/Supabase_Ready-3ECF8E?style=flat-square&logo=supabase&logoColor=white)
+![License MIT](https://img.shields.io/badge/License_MIT-6B9F00?style=flat-square)
 
 ---
 
+[Features](#features) •
+[Why This App?](#why-this-app) •
+[Architecture](#architecture) •
+[Screenshots](#screenshots) •
+[Quick Start](#quick-start) •
+[Configuration](#configuration) •
+[Usage](#usage) •
+[Testing](#testing) •
+[Project Structure](#project-structure) •
+[Planned Enhancements](#planned-enhancements)
+
+</div>
+
+## Why This App?
+
+IT assets are the backbone of every organization, yet they're often scattered across spreadsheets, sticky notes, and inboxes. Licenses expire without warning. Domains lapse. SSL certificates go unnoticed until the browser screams **"Not Secure."**
+
+**IT Asset Manager** consolidates everything into one place: track what you own, know what's expiring, and automate renewals — so you can stop firefighting and start managing.
+
 ## Features
 
-- **IT Asset Tracking** — Manage four asset types: Licenses, Domains, SSL Certificates, and Software Subscriptions.
-- **Full CRUD Interface** — Create, read, update, and delete assets through a clean web UI.
-- **Role-Based Access Control** — Admin role for full CRUD; Viewer role for read-only access. Protected via Django authentication and custom mixins.
-- **Expiry Dashboard** — At-a-glance summary showing total assets and counts of items expiring within 30, 60, and 90 days.
-- **Automated Renewal Alerts** — Management command (`check_renewals`) that scans for assets nearing expiry and sends email notifications at configurable thresholds (default: 90, 60, 30 days).
-- **Responsive UI** — Bootstrap 5.3 frontend with themed badges, icons, and mobile-friendly navigation.
-- **Comprehensive Test Suite** — Unit tests covering models, views, authentication, and the renewal command.
-
-## Tech Stack
-
-| Category      | Technology                                          |
-|---------------|-----------------------------------------------------|
-| **Backend**   | Python 3.11+, Django 5.2                            |
-| **Database**  | PostgreSQL (via `psycopg[binary]`) — Supabase-ready |
-| **Frontend**  | Django Templates, HTML5, Bootstrap 5.3, Bootstrap Icons |
-| **Auth**      | Django `contrib.auth` with custom `Profile` role model |
-| **Testing**   | Django Test Framework (`unittest`)                  |
-| **Task Runner** | Custom Django management command (cron/celery-ready) |
+| Icon | Feature | Description |
+|------|---------|-------------|
+| 📦 | **Multi-Type Asset Tracking** | Manage Licenses, Domains, SSL Certificates, and Software Subscriptions from a single interface. |
+| ✏️ | **Full CRUD Interface** | Create, read, update, and delete assets through a clean, responsive web UI. |
+| 🔐 | **Role-Based Access Control** | Admin role for full CRUD; Viewer role for read-only access — enforced via Django authentication and custom mixins. |
+| 📊 | **Expiry Dashboard** | At-a-glance summary showing total asset counts and items expiring within 30, 60, and 90 days. |
+| 📬 | **Automated Renewal Alerts** | Built-in `check_renewals` management command scans for expiring assets and sends email notifications at configurable thresholds (defaults: 90, 60, 30 days). |
+| 📱 | **Responsive UI** | Bootstrap 5.3 interface with themed badges, icons, and mobile-friendly navigation. |
+| ✅ | **Comprehensive Test Suite** | Unit tests covering models, views, authentication, and the renewal command — 14 test cases across 4 modules. |
 
 ## Architecture
 
 ```
-┌─────────────────────────────────────────────┐
-│                User Browser                  │
-└─────────────────────┬───────────────────────┘
-                      │ HTTP
-┌─────────────────────▼───────────────────────┐
-│            Django Application                │
-│  ┌─────────┐  ┌────────┐  ┌──────────────┐  │
-│  │ Views /  │  │  ORM   │  │ Renewal      │  │
-│  │Templates │  │ / Auth │  │ Check Command│  │
-│  └─────────┘  └────────┘  └──────┬───────┘  │
-│                                   │          │
-│  ┌────────────────────────────┐   │          │
-│  │   Email Sending Module     │◄──┘          │
-│  └──────────┬─────────────────┘              │
-└─────────────┼───────────────┬────────────────┘
-              │               │ SMTP
-     ┌────────▼────┐   ┌──────▼──────┐
-     │  PostgreSQL │   │ Email/SMTP  │
-     │  (Supabase) │   │   Service   │
-     └─────────────┘   └─────────────┘
+┌──────────────────────────────────────────────────────┐
+│                    User Browser                        │
+│           (Django Templates + Bootstrap 5.3)           │
+└────────────────────────┬─────────────────────────────┘
+                         │ HTTP / HTTPS
+                         ▼
+┌──────────────────────────────────────────────────────┐
+│                Django Application                      │
+│                                                        │
+│  ┌─────────────────┐  ┌──────────────┐               │
+│  │   Views /        │  │     ORM      │               │
+│  │   Templates      │  │   / Auth     │               │
+│  │                  │  │              │               │
+│  │  • Dashboard     │  │  • Asset     │               │
+│  │  • Asset CRUD    │  │  • Profile   │               │
+│  │  • Auth Pages    │  │  • Perms     │               │
+│  └────────┬────────┘  └──────┬───────┘               │
+│           │                  │                         │
+│  ┌────────▼──────────────────▼───────────────────┐   │
+│  │           Renewal Check Command                │   │
+│  │    python manage.py check_renewals [--dry-run] │   │
+│  └────────────────────┬──────────────────────────┘   │
+│                       │                                │
+│  ┌────────────────────▼──────────────────────────┐   │
+│  │           Email Sending Module                  │   │
+│  │   SMTP │ ConsoleBackend (dev fallback)          │   │
+│  └────────────────────┬──────────────────────────┘   │
+└───────────────────────┼──────────────────────────────┘
+                        │
+              ┌─────────▼──────────┬──────────────────┐
+              │     PostgreSQL      │   Email / SMTP    │
+              │  (Supabase Ready)   │     Service       │
+              └────────────────────┘──────────────────┘
 ```
 
-## Getting Started
+## Screenshots
+
+<div align="center">
+  <table>
+    <tr>
+      <td align="center"><b>Dashboard</b></td>
+      <td align="center"><b>Asset List</b></td>
+      <td align="center"><b>Asset Detail</b></td>
+    </tr>
+    <tr>
+      <td>
+        <div style="border:1px solid #e0e0e0; border-radius:8px; padding:40px 20px; text-align:center; background:#f9fafb; min-width:240px;">
+          <span style="font-size:2.5rem;">📊</span>
+          <p style="color:#666; margin-top:8px;">Expiry summary, counts by threshold, quick navigation</p>
+        </div>
+      </td>
+      <td>
+        <div style="border:1px solid #e0e0e0; border-radius:8px; padding:40px 20px; text-align:center; background:#f9fafb; min-width:240px;">
+          <span style="font-size:2.5rem;">📋</span>
+          <p style="color:#666; margin-top:8px;">Filterable table of all assets with status badges</p>
+        </div>
+      </td>
+      <td>
+        <div style="border:1px solid #e0e0e0; border-radius:8px; padding:40px 20px; text-align:center; background:#f9fafb; min-width:240px;">
+          <span style="font-size:2.5rem;">🔍</span>
+          <p style="color:#666; margin-top:8px;">Full asset metadata, edit/delete actions</p>
+        </div>
+      </td>
+    </tr>
+  </table>
+</div>
+
+## Quick Start
 
 ### Prerequisites
 
-- Python 3.11 or later
+- Python **3.11+**
 - PostgreSQL database (local or [Supabase](https://supabase.com))
-- pip (Python package manager)
-- (Optional) Virtual environment tool (`venv`)
+- `pip` + `venv` (or your preferred environment manager)
 
 ### Installation
 
 ```bash
-# 1. Clone the repository
+# Clone the repository
 git clone https://github.com/Batu1-1an/web-app-centralizing.git
 cd web-app-centralizing
 
-# 2. Create and activate a virtual environment
+# Create and activate a virtual environment
 python -m venv venv
+source venv/bin/activate   # Windows: venv\Scripts\activate
 
-# On Windows
-venv\Scripts\activate
-# On macOS / Linux
-source venv/bin/activate
-
-# 3. Install dependencies
+# Install dependencies
 pip install -r requirements.txt
 
-# 4. Configure environment variables
-cp .env.example .env
-# Edit .env with your database credentials and secret key
+# Configure environment variables
+cp .env.example .env        # then edit .env with your credentials
 
-# 5. Apply database migrations
+# Run database migrations
 python manage.py migrate
 
-# 6. Create a superuser
+# Create an admin superuser
 python manage.py createsuperuser
 
-# 7. Run the development server
+# Start the development server
 python manage.py runserver
 ```
 
-Visit **http://127.0.0.1:8000/** — you will be redirected to the dashboard.
+Open **http://127.0.0.1:8000/** in your browser — you'll be redirected to the dashboard.
 
 ## Configuration
 
-All sensitive settings are configured via environment variables. Copy `.env.example` to `.env` and adjust:
+All sensitive settings are configured via environment variables. Copy `.env.example` to `.env` and populate:
 
-```ini
-# Django
-DJANGO_SECRET_KEY=your-secret-key-here
-DJANGO_DEBUG=True
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DJANGO_SECRET_KEY` | `django-insecure-...` | Django secret key (**change in production**) |
+| `DJANGO_DEBUG` | `False` | Enable debug mode (`True` / `False`) |
+| `DB_ENGINE` | `django.db.backends.postgresql` | Database engine |
+| `DB_NAME` | `postgres` | Database name |
+| `DB_USER` | `postgres` | Database user |
+| `DB_PASSWORD` | *(empty)* | Database password |
+| `DB_HOST` | `localhost` | Database host |
+| `DB_PORT` | `5432` | Database port |
+| `EMAIL_BACKEND` | `console.EmailBackend` | Email backend class |
+| `EMAIL_HOST` | `smtp.example.com` | SMTP server host |
+| `EMAIL_PORT` | `587` | SMTP server port |
+| `EMAIL_USE_TLS` | `True` | Enable TLS for SMTP |
+| `EMAIL_HOST_USER` | *(empty)* | SMTP username |
+| `EMAIL_HOST_PASSWORD` | *(empty)* | SMTP password |
+| `DEFAULT_FROM_EMAIL` | `noreply@example.com` | Default sender address |
 
-# PostgreSQL (e.g. Supabase)
-DB_ENGINE=django.db.backends.postgresql
-DB_NAME=postgres
-DB_USER=postgres
-DB_PASSWORD=your-db-password
-DB_HOST=your-project.supabase.co
-DB_PORT=5432
-
-# SMTP Email
-EMAIL_BACKEND=django.core.mail.backends.smtp.EmailBackend
-EMAIL_HOST=smtp.example.com
-EMAIL_PORT=587
-EMAIL_USE_TLS=True
-EMAIL_HOST_USER=your-email@example.com
-EMAIL_HOST_PASSWORD=your-email-password
-DEFAULT_FROM_EMAIL=noreply@yourdomain.com
-```
-
-The application falls back to `django.core.mail.backends.console.EmailBackend` when no SMTP is configured, printing emails to the console during development.
+> When SMTP is unconfigured, the app falls back to `django.core.mail.backends.console.EmailBackend`, printing emails to the console — perfect for local development.
 
 ## Usage
 
 ### Setting Up Roles
 
-1. Log in to the Django Admin at `/admin/` with your superuser credentials.
+1. Log in to Django Admin at **`/admin/`** with your superuser account.
 2. Navigate to **Assets → Profiles**.
-3. Edit your user profile and set the **Role** to `Admin`.
-4. Save — now you have full CRUD access through the main app.
+3. Edit your profile and set the **Role** field to `Admin`.
+4. Save — you now have full CRUD access throughout the app.
 
 ### Managing Assets
 
-| Endpoint                  | Action                    | Access   |
-|---------------------------|---------------------------|----------|
-| `/assets/dashboard/`      | View summary & renewals   | Any user |
-| `/assets/`                | List all assets           | Any user |
-| `/assets/<id>/`           | View asset details        | Any user |
-| `/assets/add/`            | Create a new asset        | Admin    |
-| `/assets/<id>/edit/`      | Update an asset           | Admin    |
-| `/assets/<id>/delete/`    | Delete an asset           | Admin    |
+| Endpoint | Action | Access |
+|----------|--------|--------|
+| `/assets/dashboard/` | View expiry summary & counts | Any authenticated user |
+| `/assets/` | List all assets | Any authenticated user |
+| `/assets/<id>/` | View asset detail | Any authenticated user |
+| `/assets/add/` | Create a new asset | Admin only |
+| `/assets/<id>/edit/` | Update an asset | Admin only |
+| `/assets/<id>/delete/` | Delete an asset | Admin only |
 
 ### Renewal Alerts
 
-Run the renewal check manually:
-
 ```bash
-# Dry run — see what would be sent without actually emailing
+# Dry run — preview alerts without sending emails
 python manage.py check_renewals --dry-run
 
 # Send alerts for assets expiring within default thresholds (90, 60, 30 days)
 python manage.py check_renewals
 
-# Custom thresholds
+# Custom thresholds (e.g., 60 and 20 days)
 python manage.py check_renewals --days 60 20
 ```
 
-To automate, schedule the command via cron (Linux/macOS) or Task Scheduler (Windows):
+#### Automate via Cron
+
+Add this line to your crontab to run daily at 8:00 AM:
 
 ```cron
-0 8 * * * cd /path/to/project && /path/to/venv/bin/python manage.py check_renewals
+0 8 * * * cd /path/to/web-app-centralizing && /path/to/venv/bin/python manage.py check_renewals
 ```
 
-## Testing
+On Windows, use Task Scheduler to trigger the same command.
 
-The project includes 14 test cases across 4 test modules:
+## Testing
 
 ```bash
 python manage.py test assets
 ```
 
-| Test Module         | Coverage                                       |
-|---------------------|-------------------------------------------------|
-| `test_models.py`    | Asset field constraints, Profile defaults/roles |
-| `test_views.py`     | Template rendering, CRUD form submission, redirects |
-| `test_auth.py`      | Login-required gates, Admin vs. Viewer RBAC     |
-| `test_commands.py`  | `check_renewals` — dry-run, default/custom thresholds |
+| Module | Tests | Coverage |
+|--------|-------|----------|
+| `test_models.py` | 3 | Asset field constraints, Profile defaults & roles |
+| `test_views.py` | 4 | Template rendering, CRUD form submission, redirects |
+| `test_auth.py` | 4 | Login-required gates, Admin vs. Viewer RBAC enforcement |
+| `test_commands.py` | 3 | `check_renewals` dry-run, default + custom thresholds |
+| **Total** | **14** | **Core application logic** |
 
 ## Project Structure
 
 ```
 web-app-centralizing/
-├── .env.example                # Environment variable template
+├── .env.example                    # Environment variable template
 ├── .gitignore
-├── manage.py                   # Django CLI entrypoint
-├── docs/PLAN.md                 # Development plan & architecture
-├── requirements.txt            # Python dependencies
-├── templates/                  # Project-level templates
-│   └── registration/           # Auth templates (login, logout)
+├── manage.py                       # Django CLI entry point
+├── requirements.txt                # Python dependencies
+├── templates/                      # Project-level templates
+│   └── registration/               # Auth templates (login, logout)
 │       ├── login.html
 │       └── logged_out.html
-├── it_asset_manager/           # Django project configuration
-│   ├── asgi.py                 # ASGI application
-│   ├── wsgi.py                 # WSGI application
-│   ├── settings.py             # Settings (DB, email, auth, etc.)
-│   └── urls.py                 # Root URL configuration
-└── assets/                     # Core application
-    ├── admin.py                # Django admin registrations
-    ├── apps.py                 # App config
-    ├── mixins.py               # AdminRequiredMixin (RBAC)
-    ├── models.py               # Asset & Profile models
-    ├── urls.py                 # App URL routing
-    ├── views.py                # CRUD views + dashboard
-    ├── management/
-    │   └── commands/
-    │       └── check_renewals.py   # Renewal alert command
-    ├── migrations/
-    │   └── 0001_initial.py
-    ├── templates/
-    │   └── assets/
-    │       ├── base.html           # Base layout (Bootstrap 5.3)
-    │       ├── dashboard.html      # Expiry summary view
-    │       ├── asset_list.html     # Asset table
-    │       ├── asset_detail.html   # Single asset details
-    │       ├── asset_form.html     # Create/Edit form
-    │       └── asset_confirm_delete.html
-    └── tests/
-        ├── test_models.py
-        ├── test_views.py
-        ├── test_auth.py
-        └── test_commands.py
+├── it_asset_manager/               # Django project configuration
+│   ├── asgi.py                     # ASGI application entry point
+│   ├── wsgi.py                     # WSGI application entry point
+│   ├── settings.py                 # Settings (DB, email, auth, static files)
+│   └── urls.py                     # Root URL configuration
+├── assets/                         # Core IT asset management app
+│   ├── admin.py                    # Django admin registrations
+│   ├── apps.py                     # Application configuration
+│   ├── mixins.py                   # AdminRequiredMixin (RBAC enforcement)
+│   ├── models.py                   # Asset & Profile models
+│   ├── urls.py                     # App-level URL routing
+│   ├── views.py                    # CRUD views + dashboard
+│   ├── management/                 # Custom management commands
+│   │   └── commands/
+│   │       └── check_renewals.py   # Renewal alert automation
+│   ├── migrations/
+│   │   └── 0001_initial.py         # Initial database schema
+│   ├── templates/
+│   │   └── assets/                 # App templates (Bootstrap 5.3)
+│   │       ├── base.html
+│   │       ├── dashboard.html
+│   │       ├── asset_list.html
+│   │       ├── asset_detail.html
+│   │       ├── asset_form.html
+│   │       └── asset_confirm_delete.html
+│   └── tests/                      # Test suite
+│       ├── __init__.py
+│       ├── test_models.py
+│       ├── test_views.py
+│       ├── test_auth.py
+│       └── test_commands.py
+└── docs/
+    └── PLAN.md                     # Development plan & architecture notes
 ```
 
 ## Planned Enhancements
 
-- Filtering, sorting, and pagination on the asset list view
-- Granular permissions (e.g., per-asset-type access)
-- File uploads for invoices and license documents
-- Improved email notification formatting and per-owner routing
-- Integration/end-to-end tests with `LiveServerTestCase`
+- 🔍 **Filtering, sorting & pagination** on the asset list view
+- 🛡️ **Granular permissions** — per-asset-type access control
+- 📎 **File uploads** — attach invoices, license PDFs, and certificates
+- 📧 **Rich email notifications** — HTML templates, per-owner routing
+- 🧪 **End-to-end tests** using Django's `LiveServerTestCase`
+- 🔌 **REST API** — expose assets via DRF for external integrations
+- 🐳 **Docker Compose** — one-command local environment setup
 
 ## License
 
-This project is licensed under the MIT License — see the [LICENSE](LICENSE) file for details (if absent, the project is distributed without a license by default).
+<div align="center">
+
+This project is licensed under the **MIT License**.  
+See the [LICENSE](LICENSE) file for details.
+
+Built with [Django](https://www.djangoproject.com/) · [Bootstrap](https://getbootstrap.com/) · [Supabase](https://supabase.com)
+
+</div>
