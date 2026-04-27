@@ -138,3 +138,24 @@ cython_debug/
 
 # VSCode settings
 .vscode/
+
+# Private keys / certificates
+*.pem
+*.key
+*.p12
+*.pfx
+*.cert
+*.crt
+*.der
+
+# Secrets directory
+secrets/
+credentials/
+
+# IDE / OS files
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
