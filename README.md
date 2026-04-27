@@ -203,7 +203,7 @@ web-app-centralizing/
 ├── .env.example                # Environment variable template
 ├── .gitignore
 ├── manage.py                   # Django CLI entrypoint
-├── PLAN.md                     # Development plan & architecture
+├── docs/PLAN.md                 # Development plan & architecture
 ├── requirements.txt            # Python dependencies
 ├── templates/                  # Project-level templates
 │   └── registration/           # Auth templates (login, logout)
