@@ -56,15 +56,15 @@ class Profile(models.Model):
     def __str__(self):
         return f"{self.user.username} - {self.get_role_display()}"
 
-# Optional: Add a signal to automatically create/update Profile when User is created/updated
-# from django.db.models.signals import post_save
-# from django.dispatch import receiver
-# from django.contrib.auth import get_user_model
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from django.contrib.auth import get_user_model
 
-# User = get_user_model()
+User = get_user_model()
 
-# @receiver(post_save, sender=User)
-# def create_or_update_user_profile(sender, instance, created, **kwargs):
-#     if created:
-#         Profile.objects.create(user=instance)
-#     instance.profile.save()
+@receiver(post_save, sender=User)
+def create_or_update_user_profile(sender, instance, created, **kwargs):
+    if created:
+        Profile.objects.create(user=instance)
+    elif hasattr(instance, 'profile'):
+        instance.profile.save()
