@@ -36,6 +36,31 @@ class AssetModelTests(TestCase):
         self.assertTrue(isinstance(asset.created_at, datetime.datetime))
         self.assertTrue(isinstance(asset.updated_at, datetime.datetime))
 
+    def test_asset_without_optional_fields(self):
+        """Test creating an Asset with only required fields."""
+        now = timezone.localdate()
+        expiry = now + datetime.timedelta(days=30)
+        asset = Asset.objects.create(
+            name="Minimal Asset",
+            asset_type=Asset.AssetType.DOMAIN,
+            expiry_date=expiry,
+        )
+        self.assertEqual(asset.name, "Minimal Asset")
+        self.assertEqual(asset.vendor, "")
+        self.assertIsNone(asset.cost)
+        self.assertIsNone(asset.associated_user)
+        self.assertEqual(asset.associated_department, "")
+        self.assertEqual(str(asset), "Domain: Minimal Asset")
+
+    def test_asset_ordering_by_expiry(self):
+        """Test that assets are ordered by expiry_date ascending by default."""
+        today = timezone.localdate()
+        asset_a = Asset.objects.create(name="Z Later", asset_type=Asset.AssetType.LICENSE, expiry_date=today + datetime.timedelta(days=90))
+        asset_b = Asset.objects.create(name="A Sooner", asset_type=Asset.AssetType.LICENSE, expiry_date=today + datetime.timedelta(days=10))
+        assets = Asset.objects.all()
+        self.assertEqual(assets[0], asset_b)
+        self.assertEqual(assets[len(assets) - 1], asset_a)
+
 class ProfileModelTests(TestCase):
 
     def setUp(self):
@@ -60,3 +85,9 @@ class ProfileModelTests(TestCase):
         updated_profile = Profile.objects.get(pk=self.profile.pk)
         self.assertEqual(updated_profile.role, Profile.Role.ADMIN)
         self.assertEqual(str(updated_profile), f"testprofileuser - Admin")
+
+    def test_profile_auto_created_on_user_creation(self):
+        """Test that creating a User automatically creates a Profile via signal."""
+        new_user = User.objects.create_user(username='autoprofile', password='password')
+        self.assertTrue(hasattr(new_user, 'profile'))
+        self.assertEqual(new_user.profile.role, Profile.Role.VIEWER)

@@ -37,6 +37,7 @@ class AssetViewTests(TestCase):
         cls.add_url = reverse('assets:asset_add')
         cls.edit_url_1 = reverse('assets:asset_edit', args=[cls.asset1.pk])
         cls.delete_url_1 = reverse('assets:asset_delete', args=[cls.asset1.pk])
+        cls.dashboard_url = reverse('assets:dashboard')
 
         # Client
         cls.client = Client()
@@ -182,4 +183,40 @@ class AssetViewTests(TestCase):
             Asset.objects.get(pk=asset_to_delete.pk)
         self.client.logout()
 
-    # TODO: Add tests for Dashboard view
+    # --- Dashboard View Tests ---
+    def test_dashboard_view_uses_correct_template(self):
+        """Test dashboard renders the correct template."""
+        response = self.client.get(self.dashboard_url)
+        self.assertEqual(response.status_code, 200)
+        self.assertTemplateUsed(response, 'assets/dashboard.html')
+        self.assertTemplateUsed(response, 'assets/base.html')
+
+    def test_dashboard_view_shows_total_assets(self):
+        """Test dashboard displays total asset count."""
+        response = self.client.get(self.dashboard_url)
+        self.assertIn('total_assets', response.context)
+        self.assertEqual(response.context['total_assets'], 2)
+
+    def test_dashboard_view_shows_expiring_counts(self):
+        """Test dashboard displays expiring counts per threshold."""
+        response = self.client.get(self.dashboard_url)
+        self.assertIn('expiring_counts', response.context)
+        counts = response.context['expiring_counts']
+        self.assertIn(30, counts)
+        self.assertIn(60, counts)
+        self.assertIn(90, counts)
+        self.assertEqual(counts[30], 0)  # asset1 expires in 50d, not within 30
+        self.assertEqual(counts[60], 1)  # asset1 expires in 50d, within 60
+        self.assertEqual(counts[90], 0)  # asset2 expires in 100d, not within 90
+
+    def test_dashboard_view_context_keys(self):
+        """Test dashboard provides all expected context keys."""
+        response = self.client.get(self.dashboard_url)
+        expected_keys = ['total_assets', 'expiring_counts', 'expiring_soon_assets', 'soon_threshold']
+        for key in expected_keys:
+            self.assertIn(key, response.context)
+
+    def test_dashboard_view_shows_soon_threshold(self):
+        """Test dashboard soon_threshold is the minimum threshold."""
+        response = self.client.get(self.dashboard_url)
+        self.assertEqual(response.context['soon_threshold'], 30)
