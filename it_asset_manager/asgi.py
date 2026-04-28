@@ -8,9 +8,17 @@ https://docs.djangoproject.com/en/5.2/howto/deployment/asgi/
 """
 
 import os
+from pathlib import Path
 
 from django.core.asgi import get_asgi_application
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "it_asset_manager.settings")
+
+try:
+    from dotenv import load_dotenv
+except ImportError:
+    pass
+else:
+    load_dotenv(Path(__file__).resolve().parent.parent / ".env")
 
 application = get_asgi_application()
