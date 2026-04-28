@@ -5,12 +5,23 @@
 {% block content %}
 <h1>Confirm Delete</h1>
 
-<p>Are you sure you want to delete the asset "{{ object.name }}"?</p> {# object is the default context name for DeleteView #}
+<div class="alert alert-danger" role="alert">
+    <i class="bi bi-exclamation-triangle"></i>
+    Are you sure you want to delete the asset <strong>"{{ object.name }}"</strong>? This action cannot be undone.
+</div>
+
+<dl class="row">
+    <dt class="col-sm-3">Type</dt>
+    <dd class="col-sm-9">{{ object.get_asset_type_display }}</dd>
+    <dt class="col-sm-3">Vendor</dt>
+    <dd class="col-sm-9">{{ object.vendor|default:"N/A" }}</dd>
+    <dt class="col-sm-3">Expiry Date</dt>
+    <dd class="col-sm-9">{{ object.expiry_date|date:"Y-m-d" }}</dd>
+</dl>
 
 <form method="post">
     {% csrf_token %}
-    <button type="submit">Yes, delete</button>
-    <a href="{% url 'assets:asset_detail' object.pk %}">Cancel</a> {# Link back to the detail page #}
+    <button type="submit" class="btn btn-danger me-2"><i class="bi bi-trash"></i> Yes, delete</button>
+    <a href="{% url 'assets:asset_detail' object.pk %}" class="btn btn-secondary"><i class="bi bi-x-circle"></i> Cancel</a>
 </form>
-
 {% endblock %}

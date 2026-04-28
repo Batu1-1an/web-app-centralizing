@@ -5,9 +5,7 @@
 {% block content %}
 <div class="d-flex justify-content-between align-items-center mb-3">
     <h1>Asset List</h1>
-    {# Link to add new asset (We'll add permission checks later) #}
     <a href="{% url 'assets:asset_add' %}" class="btn btn-primary"><i class="bi bi-plus-circle"></i> Add New Asset</a>
-    <a href="{% url 'assets:asset_add' %}" class="btn btn-primary">Add New Asset</a>
 </div>
 
 {% if assets %}
@@ -47,7 +45,8 @@
                     <td>{{ asset.associated_user.username|default:"N/A" }}</td>
                     <td>{{ asset.associated_department|default:"N/A" }}</td>
                     <td>
-                        {# Edit/Delete links will go here later #}
+                        <a href="{% url 'assets:asset_edit' asset.pk %}" class="btn btn-sm btn-warning" title="Edit"><i class="bi bi-pencil-square"></i></a>
+                        <a href="{% url 'assets:asset_delete' asset.pk %}" class="btn btn-sm btn-danger" title="Delete"><i class="bi bi-trash"></i></a>
                     </td>
                 </tr>
             {% endfor %}
