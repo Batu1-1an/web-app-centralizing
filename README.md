@@ -11,6 +11,7 @@
 ![Bootstrap 5.3](https://img.shields.io/badge/Bootstrap_5.3-7952B3?style=flat-square&logo=bootstrap&logoColor=white)
 ![Supabase Ready](https://img.shields.io/badge/Supabase_Ready-3ECF8E?style=flat-square&logo=supabase&logoColor=white)
 ![License MIT](https://img.shields.io/badge/License_MIT-6B9F00?style=flat-square)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=flat-square&logo=docker&logoColor=white)
 
 ---
 
@@ -43,7 +44,7 @@ IT assets are the backbone of every organization, yet they're often scattered ac
 | 📊 | **Expiry Dashboard** | At-a-glance summary showing total asset counts and items expiring within 30, 60, and 90 days. |
 | 📬 | **Automated Renewal Alerts** | Built-in `check_renewals` management command scans for expiring assets and sends email notifications at configurable thresholds (defaults: 90, 60, 30 days). |
 | 📱 | **Responsive UI** | Bootstrap 5.3 interface with themed badges, icons, and mobile-friendly navigation. |
-| ✅ | **Comprehensive Test Suite** | Unit tests covering models, views, authentication, and the renewal command — 14 test cases across 4 modules. |
+| ✅ | **Comprehensive Test Suite** | Unit tests covering models, views, authentication, dashboard, and the renewal command — 17 test cases across 5 modules. |
 
 ## Architecture
 
@@ -152,6 +153,21 @@ python manage.py runserver
 
 Open **http://127.0.0.1:8000/** in your browser — you'll be redirected to the dashboard.
 
+### Docker Quick Start
+
+```bash
+# Start all services (PostgreSQL + Django)
+docker compose up -d
+
+# Run database migrations
+docker compose exec web python manage.py migrate
+
+# Create an admin superuser
+docker compose exec web python manage.py createsuperuser
+```
+
+Open **http://127.0.0.1:8000/** in your browser.
+
 ## Configuration
 
 All sensitive settings are configured via environment variables. Copy `.env.example` to `.env` and populate:
@@ -231,14 +247,18 @@ python manage.py test assets
 | `test_views.py` | 4 | Template rendering, CRUD form submission, redirects |
 | `test_auth.py` | 4 | Login-required gates, Admin vs. Viewer RBAC enforcement |
 | `test_commands.py` | 3 | `check_renewals` dry-run, default + custom thresholds |
-| **Total** | **14** | **Core application logic** |
+| `test_dashboard.py` | 3 | Dashboard view rendering, asset counts, expiry context |
+| **Total** | **17** | **Core application logic** |
 
 ## Project Structure
 
 ```
 web-app-centralizing/
+├── .dockerignore                   # Docker build exclusions
 ├── .env.example                    # Environment variable template
 ├── .gitignore
+├── Dockerfile                      # Multi-stage production build (gunicorn)
+├── docker-compose.yml              # PostgreSQL 16 + Django services
 ├── manage.py                       # Django CLI entry point
 ├── requirements.txt                # Python dependencies
 ├── templates/                      # Project-level templates
@@ -275,7 +295,8 @@ web-app-centralizing/
 │       ├── test_models.py
 │       ├── test_views.py
 │       ├── test_auth.py
-│       └── test_commands.py
+│       ├── test_commands.py
+│       └── test_dashboard.py
 └── docs/
     └── PLAN.md                     # Development plan & architecture notes
 ```
@@ -288,7 +309,7 @@ web-app-centralizing/
 - 📧 **Rich email notifications** — HTML templates, per-owner routing
 - 🧪 **End-to-end tests** using Django's `LiveServerTestCase`
 - 🔌 **REST API** — expose assets via DRF for external integrations
-- 🐳 **Docker Compose** — one-command local environment setup
+- ✅ **Docker Compose** — one-command local environment setup (PostgreSQL 16 + Django)
 
 ## License
 
